@@ -1,7 +1,29 @@
 import React, { useMemo, useState } from 'react'
 import { BookingData } from '../../../../models'
-import './BookingsTable.css'
-import { Box, Tabs, Tab } from '@mui/material'
+import {
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tabs,
+  Tab,
+  Button,
+} from '@mui/material'
+import {
+  DocumentData,
+  DocumentReference,
+  DocumentSnapshot,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+} from 'firebase/firestore'
+import { app, fireDb } from '../../../..'
+import { getAuth } from 'firebase/auth'
 
 interface BookingsTableProps {
   bookings: BookingData[]
@@ -11,9 +33,15 @@ interface TabPanelProps {
   value: number
   index: number
   data: BookingData[]
+  deleteBooking?: (id: string) => void
 }
 
-function TabPanel({ value, index, data }: TabPanelProps) {
+function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
+  const loggedInUser = useMemo(() => {
+    const user = localStorage.getItem('user')
+    return user ? JSON.parse(user) : null
+  }, [])
+
   return (
     <div
       role="tabpanel"
@@ -21,28 +49,43 @@ function TabPanel({ value, index, data }: TabPanelProps) {
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
     >
-      <table className="bookings-table">
-        <thead>
-          <tr>
-            <th>Created</th>
-            <th>User</th>
-            <th>From Date</th>
-            <th>To Date</th>
-            <th>Parking Spot ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((bookingObj: BookingData) => (
-            <tr key={bookingObj.booking_id}>
-              <td>{bookingObj.createdDate}</td>
-              <td>{bookingObj.user.name}</td>
-              <td>{bookingObj.start_date.toDateString()}</td>
-              <td>{bookingObj.end_date.toDateString()}</td>
-              <td>{bookingObj.parking_spot.name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Created</TableCell>
+              <TableCell>User</TableCell>
+              <TableCell>From Date</TableCell>
+              <TableCell>To Date</TableCell>
+              <TableCell>Parking Spot ID</TableCell>
+              {deleteBooking && <TableCell>Manage</TableCell>}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((bookingObj: BookingData) => (
+              <TableRow key={bookingObj.booking_id}>
+                <TableCell>{bookingObj.createdDate}</TableCell>
+                <TableCell>{bookingObj.user.name}</TableCell>
+                <TableCell>{bookingObj.start_date.toDateString()}</TableCell>
+                <TableCell>{bookingObj.end_date.toDateString()}</TableCell>
+                <TableCell>{bookingObj.parking_spot.name}</TableCell>
+                {deleteBooking && (
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => deleteBooking(bookingObj.booking_id)}
+                      disabled={bookingObj.user.email !== loggedInUser?.email}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   )
 }
@@ -70,6 +113,34 @@ function BookingsTable({ bookings }: BookingsTableProps) {
     setValue(newValue)
   }
 
+  async function deleteBooking(bookingId: string) {
+    const docRef: DocumentReference<DocumentData> = doc(
+      fireDb,
+      'Bookings',
+      bookingId,
+    )
+    const docSnap: DocumentSnapshot<DocumentData> = await getDoc(docRef)
+
+    // Check if the booking document exists
+    if (!docSnap.exists()) {
+      console.log('Booking document does not exist')
+      return
+    }
+    /* 
+    const bookingData: BookingData = docSnap.data() as BookingData
+    // Check if the current user is the creator of the booking document
+      const auth = getAuth(app)
+    if (bookingData.user.id !== auth.currentUser?.uid) {
+      console.log('You do not have permission to delete this booking')
+      return
+    } */
+
+    // Delete the booking document
+    await deleteDoc(docRef)
+
+    console.log('Booking document deleted successfully')
+  }
+
   return (
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -79,10 +150,15 @@ function BookingsTable({ bookings }: BookingsTableProps) {
           aria-label="basic tabs example"
         >
           <Tab label="Current Bookings" />
-          <Tab label="Old Bookings" />
+          <Tab label="Expired Bookings" />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0} data={currentBookings} />
+      <TabPanel
+        deleteBooking={deleteBooking}
+        value={value}
+        index={0}
+        data={currentBookings}
+      />
       <TabPanel value={value} index={1} data={filteredBookings} />
     </>
   )
