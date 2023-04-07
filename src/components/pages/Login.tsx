@@ -6,11 +6,9 @@ interface LoginProps {
   onLogin: (email: string, password: string) => void
 }
 
-type UserCred = { email: string; password: string }
-
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('richard.gronroos@forefront.se')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const auth = getAuth()

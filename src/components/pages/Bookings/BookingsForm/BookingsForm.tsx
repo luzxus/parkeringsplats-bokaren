@@ -77,8 +77,11 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
       />
       <br />
       <div>
-        <p>San fransisco = 14 </p>
-        <p>Boston = Underground</p>
+        <p>
+          San fransisco är parkeringsplatsen som är nedanför kontoret på
+          parkeringsplats 14
+        </p>
+        <p>Boston är parkeringen i garaget</p>
       </div>
       <br />
 
