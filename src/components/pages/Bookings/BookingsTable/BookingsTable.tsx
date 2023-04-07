@@ -58,7 +58,13 @@ function BookingsTable({ bookings }: BookingsTableProps) {
     })
   }, [bookings])
 
-  console.log('filterd', filteredBookings)
+  const currentBookings = useMemo(() => {
+    const currentDate = new Date()
+    return bookings.filter((booking) => {
+      const endDate = new Date(booking.end_date)
+      return endDate >= currentDate
+    })
+  }, [bookings])
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue)
@@ -76,7 +82,7 @@ function BookingsTable({ bookings }: BookingsTableProps) {
           <Tab label="Old Bookings" />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0} data={bookings} />
+      <TabPanel value={value} index={0} data={currentBookings} />
       <TabPanel value={value} index={1} data={filteredBookings} />
     </>
   )
