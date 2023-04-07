@@ -1,6 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './Login.css'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserSessionPersistence,
+} from 'firebase/auth'
+import { User } from '../../models'
 
 interface LoginProps {
   onLogin: (email: string, password: string) => void
@@ -13,6 +19,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const auth = getAuth()
 
+  useEffect(() => {
+    // Check if a user is already logged in
+    const unsubscribe = auth.onAuthStateChanged((user: any) => {
+      if (user) {
+        onLogin(user.email, password)
+      }
+    })
+    return () => {
+      unsubscribe()
+    }
+  }, [auth, onLogin, password])
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
@@ -21,26 +39,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       return
     }
 
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user
+    setPersistence(auth, browserSessionPersistence)
+      .then(() => {
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            const user = userCredential.user
 
-        localStorage.setItem(
-          'user',
-          JSON.stringify({ email: user.email, id: user.uid }),
-        )
+            localStorage.setItem(
+              'user',
+              JSON.stringify({ email: user.email, id: user.uid }),
+            )
 
-        onLogin(email, password)
+            onLogin(email, password)
+          })
+          .catch((error: any) => {
+            // Handle authentication errors
+            const errorCode = error.code
+            const errorMessage = error.message
+            console.error(
+              `Failed to authenticate user: ${errorCode} - ${errorMessage}`,
+            )
+
+            setError('Invalid email or password')
+          })
       })
       .catch((error: any) => {
-        // Handle authentication errors
-        const errorCode = error.code
-        const errorMessage = error.message
-        console.error(
-          `Failed to authenticate user: ${errorCode} - ${errorMessage}`,
-        )
-
-        setError('Invalid email or password')
+        console.error('Failed to set persistence:', error)
       })
   }
 

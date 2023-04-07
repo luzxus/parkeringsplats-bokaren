@@ -77,6 +77,7 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
       />
       <br />
       <div>
+        <p>Sunt förnuft vid bokningen av parkeringsplatserna tills all validering och funktionalitet är på plats! ;)</p>
         <p>
           San fransisco är parkeringsplatsen som är nedanför kontoret på
           parkeringsplats 14
