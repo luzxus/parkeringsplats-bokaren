@@ -8,6 +8,7 @@ import { initializeApp } from 'firebase/app'
 import { getAnalytics } from 'firebase/analytics'
 import { getDatabase } from 'firebase/database'
 import { getFirestore } from 'firebase/firestore'
+import { BrowserRouter } from 'react-router-dom'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDhB_mDwqpB1PY4fOYhCNOWLnBcXWXtDss',
@@ -28,7 +29,9 @@ const analytics = getAnalytics(app)
 export const fireDb = getFirestore(app)
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>,
 )
 

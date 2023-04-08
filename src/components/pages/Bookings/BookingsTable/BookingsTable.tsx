@@ -37,11 +37,8 @@ interface TabPanelProps {
 }
 
 function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
-  const loggedInUser = useMemo(() => {
-    const user = localStorage.getItem('user')
-    return user ? JSON.parse(user) : null
-  }, [])
-
+  const auth = getAuth()
+  const currentUserEmail = auth.currentUser?.email ?? ''
   return (
     <div
       role="tabpanel"
@@ -75,7 +72,7 @@ function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
                       variant="contained"
                       color="error"
                       onClick={() => deleteBooking(bookingObj.booking_id)}
-                      disabled={bookingObj.user.email !== loggedInUser?.email}
+                      disabled={bookingObj.user.email !== currentUserEmail}
                     >
                       Delete
                     </Button>
