@@ -45,11 +45,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           .then((userCredential) => {
             const user = userCredential.user
 
-            localStorage.setItem(
-              'user',
-              JSON.stringify({ email: user.email, id: user.uid }),
-            )
-
             onLogin(email, password)
           })
           .catch((error: any) => {

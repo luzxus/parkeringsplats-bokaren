@@ -12,15 +12,12 @@ import {
   getDocs,
   onSnapshot,
 } from 'firebase/firestore'
-import { fireDb } from '../../..'
+import { app, fireDb } from '../../..'
 import './Bookings.css'
+import { getAuth } from 'firebase/auth'
 function Bookings() {
   const [bookings, setBookings] = useState<BookingData[]>([])
   const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([])
-
-  const user: { email: string; id: string } = useMemo(() => {
-    return JSON.parse(localStorage.getItem('user')!)
-  }, [])
 
   useEffect(() => {
     const getParkingSpots = async (): Promise<void> => {
@@ -98,11 +95,14 @@ function Bookings() {
 
     return () => unsubscribe()
   }, [])
-
+  const auth = getAuth(app)
   return (
     <div className="booking-screen">
       <h1 style={{ textAlign: 'center' }}>Boka här</h1>
-      <BookingsForm userId={user.id} parkingSpots={parkingSpots} />
+      <BookingsForm
+        userId={auth.currentUser?.uid}
+        parkingSpots={parkingSpots}
+      />
       <h2>Bookings</h2>
       <BookingsTable bookings={bookings} />
     </div>

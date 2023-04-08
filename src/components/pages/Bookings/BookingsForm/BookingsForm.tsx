@@ -7,7 +7,7 @@ import { getCurrentDate } from '../../../../various/utils'
 import './BookingsForm.css'
 interface Props {
   parkingSpots: ParkingSpot[]
-  userId: string
+  userId: string | undefined
 }
 
 export const BookingsForm = ({ parkingSpots, userId }: Props) => {
@@ -77,7 +77,10 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
       />
       <br />
       <div>
-        <p>Sunt förnuft vid bokningen av parkeringsplatserna tills all validering och funktionalitet är på plats! ;)</p>
+        <p>
+          Sunt förnuft vid bokningen av parkeringsplatserna tills all validering
+          och funktionalitet är på plats! ;)
+        </p>
         <p>
           San fransisco är parkeringsplatsen som är nedanför kontoret på
           parkeringsplats 14
