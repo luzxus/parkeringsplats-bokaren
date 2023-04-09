@@ -3,7 +3,7 @@ import { DocumentData, DocumentReference } from 'firebase/firestore'
 export interface BookingData {
   booking_id: string
   end_date: Date
-  parking_spot: DocumentData
+  parking_spot_id: DocumentData
   start_date: Date
   user_id: DocumentData
   createdDate: string

@@ -41,6 +41,7 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
       bookings,
       startDate,
       endDate,
+      parkingSpot,
     )
     if (overlappingBookings.length > 0) {
       setFormError(

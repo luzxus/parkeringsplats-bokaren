@@ -16,10 +16,12 @@ export function getOverlappingBookings(
   bookings: BookingData[],
   startDate: Date,
   endDate: Date,
-  excludedBookingId?: string,
+  includedParkingSpot?: string,
 ): BookingData[] {
   const overlappingBookings = bookings.filter((booking) => {
-    if (excludedBookingId && booking.booking_id === excludedBookingId) {
+    const parkingCollection = collection(fireDb, 'ParkingSpots')
+    const parkingDoc = doc(parkingCollection, includedParkingSpot)
+    if (parkingDoc && booking.parking_spot_id.id !== parkingDoc.id) {
       return false
     }
     let startDateString = startDate.toString()
