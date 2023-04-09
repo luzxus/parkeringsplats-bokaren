@@ -2,6 +2,7 @@ import {
   DocumentData,
   DocumentReference,
   DocumentSnapshot,
+  Timestamp,
   collection,
   doc,
   getDoc,
@@ -21,14 +22,19 @@ export function getOverlappingBookings(
     if (excludedBookingId && booking.booking_id === excludedBookingId) {
       return false
     }
+    let startDateString = startDate.toString()
+    let endDateString = endDate.toString()
 
-    const bookingStart = new Date(booking.start_date)
-    const bookingEnd = new Date(booking.end_date)
+    const timestamp_start = (booking.start_date as unknown) as Timestamp
+    const bookingStartDate = timestamp_start.toDate().toString()
+    const timestamp_end = (booking.end_date as unknown) as Timestamp
+    const bookingEndDate = timestamp_end.toDate().toString()
 
     return (
-      (bookingStart <= startDate && bookingEnd >= startDate) ||
-      (bookingStart <= endDate && bookingEnd >= endDate) ||
-      (bookingStart >= startDate && bookingEnd <= endDate)
+      (bookingStartDate <= startDateString &&
+        bookingEndDate >= startDateString) ||
+      (bookingStartDate <= endDateString && bookingEndDate >= endDateString) ||
+      (bookingStartDate >= startDateString && bookingEndDate <= endDateString)
     )
   })
 
