@@ -64,7 +64,7 @@ function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
                 <TableCell>{bookingObj.user_id.name}</TableCell>
                 <TableCell>{bookingObj.start_date.toDateString()}</TableCell>
                 <TableCell>{bookingObj.end_date.toDateString()}</TableCell>
-                <TableCell>{bookingObj.parking_spot.name}</TableCell>
+                <TableCell>{bookingObj.parking_spot_id.name}</TableCell>
                 {deleteBooking && (
                   <TableCell>
                     <Button

@@ -68,7 +68,7 @@ function Bookings() {
             const bookingData: BookingData = {
               user_id: user_doc.data(),
               booking_id: booking_id,
-              parking_spot: parking_doc.data(),
+              parking_spot_id: parking_doc.data(),
               start_date: startDate,
               end_date: endDate,
               createdDate: createdDate,
