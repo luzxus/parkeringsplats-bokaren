@@ -85,7 +85,14 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
           San fransisco är parkeringsplatsen som är nedanför kontoret på
           parkeringsplats 14
         </p>
-        <p>Boston är parkeringen i garaget</p>
+        <p>
+          Boston parkeringarna är i garaget.
+          <span style={{ backgroundColor: 'yellow' }}>
+            <br />
+            Notera att boston-parkeringarna kräver att man parkerar framför varandra så
+            den som är innerst (Boston 2) behöver vänta på att Boston 1 är ute
+          </span>{' '}
+        </p>
       </div>
       <br />
 
