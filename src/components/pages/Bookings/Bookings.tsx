@@ -66,7 +66,7 @@ function Bookings() {
 
           if (user_doc.exists() && parking_doc.exists()) {
             const bookingData: BookingData = {
-              user: user_doc.data(),
+              user_id: user_doc.data(),
               booking_id: booking_id,
               parking_spot: parking_doc.data(),
               start_date: startDate,

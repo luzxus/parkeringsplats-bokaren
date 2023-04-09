@@ -5,7 +5,7 @@ export interface BookingData {
   end_date: Date
   parking_spot: DocumentData
   start_date: Date
-  user: DocumentData
+  user_id: DocumentData
   createdDate: string
 }
 
