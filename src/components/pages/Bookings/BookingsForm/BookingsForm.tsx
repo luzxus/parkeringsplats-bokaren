@@ -50,7 +50,7 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
     }
 
     // Check if the user has already booked a spot for the same day
-    const userBookings = await getUserBookings(bookings, userId!)
+    const userBookings = getUserBookings(bookings, userId!)
     const bookingsOnSameDay = userBookings.filter((booking: BookingData) => {
       const timestamp = (booking.start_date as unknown) as Timestamp
       const bookingStartDate = timestamp.toDate()
