@@ -17,7 +17,6 @@ import {
   DocumentData,
   DocumentReference,
   DocumentSnapshot,
-  collection,
   deleteDoc,
   doc,
   getDoc,
@@ -62,7 +61,7 @@ function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
             {data.map((bookingObj: BookingData) => (
               <TableRow key={bookingObj.booking_id}>
                 <TableCell>{bookingObj.createdDate}</TableCell>
-                <TableCell>{bookingObj.user.name}</TableCell>
+                <TableCell>{bookingObj.user_id.name}</TableCell>
                 <TableCell>{bookingObj.start_date.toDateString()}</TableCell>
                 <TableCell>{bookingObj.end_date.toDateString()}</TableCell>
                 <TableCell>{bookingObj.parking_spot.name}</TableCell>
@@ -72,7 +71,7 @@ function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
                       variant="contained"
                       color="error"
                       onClick={() => deleteBooking(bookingObj.booking_id)}
-                      disabled={bookingObj.user.email !== currentUserEmail}
+                      disabled={bookingObj.user_id.email !== currentUserEmail}
                     >
                       Delete
                     </Button>

@@ -1,10 +1,15 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import DateRangePicker from '../../../Datepicker/DateRangePicker'
-import { BookingPostData, ParkingSpot } from '../../../../models'
-import { addDoc, collection, doc } from 'firebase/firestore'
+import { BookingData, BookingPostData, ParkingSpot } from '../../../../models'
+import { Timestamp, addDoc, collection, doc } from 'firebase/firestore'
 import { fireDb } from '../../../..'
 import { getCurrentDate } from '../../../../various/utils'
 import './BookingsForm.css'
+import {
+  getAllDocumentsFromCollection,
+  getOverlappingBookings,
+  getUserBookings,
+} from '../../../../various/validation'
 interface Props {
   parkingSpots: ParkingSpot[]
   userId: string | undefined
@@ -28,6 +33,50 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
       setFormError('Please select a date range.')
       return
     }
+    const bookings: BookingData[] = await getAllDocumentsFromCollection(
+      'Bookings',
+    )
+    // Check if the selected parking spot is available for the selected date range
+    const overlappingBookings = getOverlappingBookings(
+      bookings,
+      startDate,
+      endDate,
+    )
+    if (overlappingBookings.length > 0) {
+      setFormError(
+        'The selected parking spot is not available for the selected date range.',
+      )
+      return
+    }
+
+    // Check if the user has already booked a spot for the same day
+    const userBookings = await getUserBookings(bookings, userId!)
+    const bookingsOnSameDay = userBookings.filter((booking: BookingData) => {
+      const timestamp = (booking.start_date as unknown) as Timestamp
+      const bookingStartDate = timestamp.toDate()
+
+      return bookingStartDate.toString() === startDate.toString()
+    })
+    if (bookingsOnSameDay.length > 0) {
+      setFormError(
+        'You have already booked a parking spot for the selected date.',
+      )
+      return
+    }
+
+    // Check if the user has reached their maximum number of bookings for the week
+    const today = new Date()
+    const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const bookingsInLastWeek = userBookings.filter((booking) => {
+      const bookingStartDate = booking.start_date
+      return bookingStartDate >= oneWeekAgo
+    })
+    if (bookingsInLastWeek.length >= 2) {
+      setFormError(
+        'You have reached your maximum number of bookings for the week.',
+      )
+      return
+    }
 
     const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpot}`)
     const userRef = doc(fireDb, `Users/${userId}`)
@@ -40,6 +89,7 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
       user_id: userRef,
       createdDate: currentDate,
     }
+    formError && setFormError('') //reset form error
 
     await addBookingPost(newBookingData)
   }
@@ -48,9 +98,18 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
     await addDoc(collection(fireDb, 'Bookings'), bookingData)
   }
 
+  const errorRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (formError) errorRef.current && errorRef.current.scrollIntoView()
+  }, [formError])
+
   return (
     <form onSubmit={handleSubmit}>
-      {formError && <p style={{ color: 'red' }}>{formError}</p>}
+      {formError && (
+        <p ref={errorRef} style={{ color: 'red' }}>
+          {formError}
+        </p>
+      )}
       <label>
         Select Parking Spot:
         <select
@@ -89,8 +148,9 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
           Boston parkeringarna är i garaget.
           <span style={{ backgroundColor: 'yellow' }}>
             <br />
-            Notera att boston-parkeringarna kräver att man parkerar framför varandra så
-            den som är innerst (Boston 2) behöver vänta på att Boston 1 är ute
+            Notera att boston-parkeringarna kräver att man parkerar framför
+            varandra så den som är innerst (Boston 2) behöver vänta på att
+            Boston 1 är ute
           </span>{' '}
         </p>
       </div>
