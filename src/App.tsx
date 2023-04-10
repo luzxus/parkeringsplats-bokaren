@@ -1,54 +1,63 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import LandingPage from './components/pages/LandingPage'
 import './globalStyles.css'
 import { Header } from './components/Header/Header'
-import { getAuth, signOut } from 'firebase/auth'
-import { app } from './index'
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-  useNavigate,
-  useParams,
-} from 'react-router-dom'
-import Signup from './components/pages/Signup/Signup'
-const App: React.FC = () => {
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
+import { Firestore } from '@firebase/firestore'
+
+const Signup = lazy(() => import('./components/pages/Signup/Signup'))
+const Login = lazy(() => import('./components/pages/Login'))
+const Bookings = lazy(() => import('./components/pages/Bookings/Bookings'))
+
+const App = () => {
   const navigate = useNavigate()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const auth = getAuth(app)
-  const handleLogin = (email: string, password: string) => {
-    // Use Firebase or another authentication library to handle login
-    setIsLoggedIn(true)
-  }
-  const logoutHandler = () => {
-    // Use Firebase or another authentication library to handle login
+  const auth = getAuth()
 
+  // Listen for Firebase authentication changes and update state
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true)
+      } else {
+        setIsLoggedIn(false)
+      }
+    })
+  }, [auth])
+
+  const loginHandler = () => {
+    // Use Firebase or another authentication library to handle login
+    navigate('/bookings')
+  }
+
+  const logoutHandler = () => {
+    // Use Firebase or another authentication library to handle logout
     signOut(auth)
       .then(() => {
         setIsLoggedIn(false)
         navigate('/')
       })
-      .catch((error: any) => {
+      .catch((error) => {
         console.error('Failed to sign out:', error)
       })
   }
+
   const signupHandler = () => {
-    setIsLoggedIn(true)
     navigate('/')
   }
 
   return (
     <>
       <Header handleLogout={logoutHandler} isLoggedIn={isLoggedIn} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <LandingPage isLoggedIn={isLoggedIn} onLogin={handleLogin} />
-          }
-        />
-        <Route path="/signup" element={<Signup onSignup={signupHandler} />} />
-      </Routes>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} />} />
+          <Route path="/signup" element={<Signup onSignup={signupHandler} />} />
+          <Route path="/login" element={<Login onLogin={loginHandler} />} />
+          <Route path="/bookings" element={<Bookings />} />
+        </Routes>
+      </Suspense>
     </>
   )
 }

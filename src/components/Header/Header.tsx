@@ -1,6 +1,6 @@
 import React from 'react'
 import './Header.css'
-import { Button } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
 export const Header: React.FC<{
@@ -10,7 +10,9 @@ export const Header: React.FC<{
   const navigate = useNavigate()
   return (
     <header className="header">
-      <h1>FFCG</h1>
+      <Button variant="text" className="nav-link" onClick={() => navigate('/')}>
+        <Typography variant="h5">FFCG</Typography>
+      </Button>
       <nav className="nav">
         {isLoggedIn ? (
           <Button
@@ -26,7 +28,7 @@ export const Header: React.FC<{
             <Button
               color="primary"
               variant="text"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/login')}
               className="nav-link"
             >
               Login

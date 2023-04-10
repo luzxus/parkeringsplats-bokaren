@@ -9,7 +9,9 @@ import {
   getAllDocumentsFromCollection,
   getOverlappingBookings,
   getUserBookings,
+  getUserBookingsInAWeek,
 } from '../../../../various/validation'
+import { timeStamp } from 'console'
 interface Props {
   parkingSpots: ParkingSpot[]
   userId: string | undefined
@@ -66,19 +68,16 @@ export const BookingsForm = ({ parkingSpots, userId }: Props) => {
     }
 
     // Check if the user has reached their maximum number of bookings for the week
-    const today = new Date()
-    const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-    const bookingsInLastWeek = userBookings.filter((booking) => {
-      const bookingStartDate = booking.start_date
-      return bookingStartDate >= oneWeekAgo
-    })
+    //Not necessary atm
+    /*   const bookingsInLastWeek = getUserBookingsInAWeek(userBookings)
     if (bookingsInLastWeek.length >= 2) {
       setFormError(
         'You have reached your maximum number of bookings for the week.',
       )
       return
-    }
+    } */
 
+    //Create booking
     const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpot}`)
     const userRef = doc(fireDb, `Users/${userId}`)
     const currentDate = getCurrentDate()

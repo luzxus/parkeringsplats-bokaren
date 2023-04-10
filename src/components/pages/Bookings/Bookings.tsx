@@ -8,14 +8,15 @@ import {
   DocumentData,
   DocumentReference,
   DocumentSnapshot,
+  Firestore,
   getDoc,
   getDocs,
   onSnapshot,
 } from 'firebase/firestore'
-import { app, fireDb } from '../../..'
 import './Bookings.css'
 import { getAuth } from 'firebase/auth'
-function Bookings() {
+import { fireDb } from '../../..'
+const Bookings = () => {
   const [bookings, setBookings] = useState<BookingData[]>([])
   const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([])
 
@@ -95,7 +96,7 @@ function Bookings() {
 
     return () => unsubscribe()
   }, [])
-  const auth = getAuth(app)
+  const auth = getAuth()
   return (
     <div className="booking-screen">
       <h1 style={{ textAlign: 'center' }}>Boka här</h1>
