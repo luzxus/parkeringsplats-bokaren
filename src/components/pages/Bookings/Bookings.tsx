@@ -16,6 +16,7 @@ import {
 import './Bookings.css'
 import { getAuth } from 'firebase/auth'
 import { fireDb } from '../../..'
+import { Grid, Typography } from '@mui/material'
 const Bookings = () => {
   const [bookings, setBookings] = useState<BookingData[]>([])
   const [parkingSpots, setParkingSpots] = useState<ParkingSpot[]>([])
@@ -99,12 +100,15 @@ const Bookings = () => {
   const auth = getAuth()
   return (
     <div className="booking-screen">
-      <h1 style={{ textAlign: 'center' }}>Boka här</h1>
+      <Grid item xs={12} m={2}>
+        <Typography variant="h3" textAlign="center" component="div" gutterBottom>
+          Boka här
+        </Typography>
+      </Grid>
       <BookingsForm
         userId={auth.currentUser?.uid!}
         parkingSpots={parkingSpots}
       />
-      <h2>Bookings</h2>
       <BookingsTable bookings={bookings} />
     </div>
   )
