@@ -1,57 +1,65 @@
-form {
+/* stylesheet.css */
+.form-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-family: sans-serif;
-  background-color: #f5f5f5;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 500px;
+  max-width: 600px;
   margin: 0 auto;
+  padding: 2rem;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
 }
 
-label {
+.form-container form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 1.2rem;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-select {
-  font-size: 1rem;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
   width: 100%;
-  margin-top: 5px;
 }
 
-select:focus {
-  outline: none;
-  border: 1px solid #61dafb;
-}
-
-button[type="submit"] {
-  background-color: #61dafb;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 1.2rem;
-  margin-top: 20px;
-  cursor: pointer;
-}
-
-button[type="submit"]:hover {
-  background-color: #47c2f3;
-}
-
-p {
+.form-container label {
   font-size: 1rem;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-container select,
+.DateRangePicker {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+  margin-right: 0.5rem;
+}
+
+.form-container button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.form-container button:hover {
+  background-color: #0056b3;
+}
+
+.form-container p {
+  margin-bottom: 1rem;
+}
+
+.form-container .input-container {
+  width: 100%;
+}
+
+.icon-content-wrapper {
+  display: flex;
 }

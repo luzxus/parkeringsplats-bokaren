@@ -4,6 +4,7 @@
   align-items: center;
   padding: 20px;
   width: calc(100% - 40px);
+  justify-content: center;
 }
 
 .login-wrapper label {
