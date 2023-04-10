@@ -1,15 +1,29 @@
 .bookings-table {
   border-collapse: collapse;
   width: 100%;
+  table-layout: fixed;
 }
 
 .bookings-table th,
 .bookings-table td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 0.5rem;
   text-align: left;
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  word-wrap: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bookings-table th {
   background-color: #f2f2f2;
+  font-weight: 500;
+}
+
+@media (min-width: 600px) {
+  .bookings-table th,
+  .bookings-table td {
+    padding: 0.8rem;
+  }
 }

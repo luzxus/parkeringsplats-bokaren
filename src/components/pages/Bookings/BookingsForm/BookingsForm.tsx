@@ -144,7 +144,7 @@ const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
               onChange={handleParkingSpotChange}
               required
             >
-              <option value="">-- Välj parkeringsplats --</option>
+              <option value="">Välj parkeringsplats</option>
               {parkingSpots.map((spot) => (
                 <option key={spot.id} value={spot.id}>
                   {spot.name}

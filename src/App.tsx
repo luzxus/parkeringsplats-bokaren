@@ -5,6 +5,7 @@ import { Header } from './components/Header/Header'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { Firestore } from '@firebase/firestore'
+import { useBookingsData } from './various/bookings'
 
 const Signup = lazy(() => import('./components/pages/Signup/Signup'))
 const Login = lazy(() => import('./components/pages/Login'))
@@ -47,6 +48,8 @@ const App = () => {
     navigate('/')
   }
 
+  const { bookings, parkingSpots } = useBookingsData()
+
   return (
     <>
       <Header handleLogout={logoutHandler} isLoggedIn={isLoggedIn} />
@@ -55,7 +58,12 @@ const App = () => {
           <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} />} />
           <Route path="/signup" element={<Signup onSignup={signupHandler} />} />
           <Route path="/login" element={<Login onLogin={loginHandler} />} />
-          <Route path="/bookings" element={<Bookings />} />
+          <Route
+            path="/bookings"
+            element={
+              <Bookings bookings={bookings} parkingSpots={parkingSpots} />
+            }
+          />
         </Routes>
       </Suspense>
     </>

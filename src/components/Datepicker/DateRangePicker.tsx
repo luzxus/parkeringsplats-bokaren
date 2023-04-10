@@ -14,6 +14,15 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onRangeChange }) => {
 
   const handleRangeChange = (dates: any) => {
     const [start, end] = dates
+
+    if (start) {
+      start.setHours(0, 0, 0, 0)
+    }
+
+    if (end) {
+      end.setHours(23, 59, 0, 0)
+    }
+
     setStartDate(start)
     setEndDate(end)
     onRangeChange(start, end)
@@ -21,6 +30,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onRangeChange }) => {
 
   return (
     <DatePicker
+      locale="se"
+      allowSameDay={true}
+      calendarStartDay={1}
       selected={startDate}
       startDate={startDate}
       endDate={endDate}

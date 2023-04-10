@@ -24,19 +24,16 @@ export function getOverlappingBookings(
     if (parkingDoc && booking.parking_spot_id.id !== parkingDoc.id) {
       return false
     }
-    let startDateString = startDate.toString()
-    let endDateString = endDate.toString()
 
     const timestamp_start = (booking.start_date as unknown) as Timestamp
-    const bookingStartDate = timestamp_start.toDate().toString()
+    const bookingStartDate = timestamp_start.toDate()
     const timestamp_end = (booking.end_date as unknown) as Timestamp
-    const bookingEndDate = timestamp_end.toDate().toString()
+    const bookingEndDate = timestamp_end.toDate()
 
     return (
-      (bookingStartDate <= startDateString &&
-        bookingEndDate >= startDateString) ||
-      (bookingStartDate <= endDateString && bookingEndDate >= endDateString) ||
-      (bookingStartDate >= startDateString && bookingEndDate <= endDateString)
+      (bookingStartDate <= startDate && bookingEndDate >= startDate) ||
+      (bookingStartDate <= endDate && bookingEndDate >= endDate) ||
+      (bookingStartDate >= startDate && bookingEndDate <= endDate)
     )
   })
 
