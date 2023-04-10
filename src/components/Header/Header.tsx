@@ -21,7 +21,7 @@ export const Header: React.FC<{
             onClick={handleLogout}
             className="nav-link"
           >
-            Logout
+            Logga ut
           </Button>
         ) : (
           <>
@@ -39,7 +39,7 @@ export const Header: React.FC<{
               onClick={() => navigate('/signup')}
               className="nav-link"
             >
-              Sign Up
+              Skapa Konto
             </Button>
           </>
         )}
