@@ -101,7 +101,7 @@ const Bookings = () => {
     <div className="booking-screen">
       <h1 style={{ textAlign: 'center' }}>Boka här</h1>
       <BookingsForm
-        userId={auth.currentUser?.uid}
+        userId={auth.currentUser?.uid!}
         parkingSpots={parkingSpots}
       />
       <h2>Bookings</h2>

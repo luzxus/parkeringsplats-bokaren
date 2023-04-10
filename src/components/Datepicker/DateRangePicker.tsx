@@ -26,7 +26,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onRangeChange }) => {
       endDate={endDate}
       selectsRange
       onChange={handleRangeChange}
-      placeholderText="Choose a from and to date"
+      placeholderText="Välj datum för bokningen ska gälla"
     />
   )
 }

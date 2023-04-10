@@ -1,164 +1,182 @@
-import React, { useEffect, useRef, useState } from 'react'
-import DateRangePicker from '../../../Datepicker/DateRangePicker'
+import React, { useState, useCallback, useRef } from 'react'
+
 import { BookingData, BookingPostData, ParkingSpot } from '../../../../models'
-import { Timestamp, addDoc, collection, doc } from 'firebase/firestore'
+import DateRangePicker from '../../../Datepicker/DateRangePicker'
+import { Timestamp, addDoc, collection, doc } from '@firebase/firestore'
 import { fireDb } from '../../../..'
 import { getCurrentDate } from '../../../../various/utils'
-import './BookingsForm.css'
 import {
   getAllDocumentsFromCollection,
   getOverlappingBookings,
   getUserBookings,
-  getUserBookingsInAWeek,
 } from '../../../../various/validation'
-import { timeStamp } from 'console'
-interface Props {
+import { getAuth } from '@firebase/auth'
+import './BookingsForm.css'
+import InfoIcon from '@mui/icons-material/Info'
+import InfoPopup from '../../../Popup/InfoPopup'
+type Props = {
+  userId: string
   parkingSpots: ParkingSpot[]
-  userId: string | undefined
 }
 
-export const BookingsForm = ({ parkingSpots, userId }: Props) => {
-  const [parkingSpot, setParkingSpot] = useState('')
-  const [startDate, setStartDate] = useState<Date | null>(null)
-  const [endDate, setEndDate] = useState<Date | null>(null)
-  const [formError, setFormError] = useState('')
+const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
+  const [parkingSpotId, setParkingSpotId] = useState<string>('')
+  const [startDate, setStartDate] = useState<Date>(new Date())
+  const [endDate, setEndDate] = useState<Date>(new Date())
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleParkingSpotChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      setParkingSpotId(event.target.value)
+      setFormErrors({})
+    },
+    [],
+  )
+  const handleDateRangeChange = useCallback((start: Date, end: Date) => {
+    setStartDate(start)
+    setEndDate(end)
+    setFormErrors({})
+  }, [])
 
-    if (!parkingSpot) {
-      setFormError('Please select a parking spot.')
-      return
-    }
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      // Add 'async' here
+      event.preventDefault()
 
-    if (!startDate || !endDate) {
-      setFormError('Please select a date range.')
-      return
-    }
-    const bookings: BookingData[] = await getAllDocumentsFromCollection(
-      'Bookings',
-    )
-    // Check if the selected parking spot is available for the selected date range
-    const overlappingBookings = getOverlappingBookings(
-      bookings,
-      startDate,
-      endDate,
-      parkingSpot,
-    )
-    if (overlappingBookings.length > 0) {
-      setFormError(
-        'The selected parking spot is not available for the selected date range.',
+      if (!parkingSpotId) {
+        setFormErrors((errors) => ({
+          ...errors,
+          parkingSpot: 'Please select a parking spot.',
+        }))
+
+        return
+      }
+
+      if (!startDate || !endDate) {
+        setFormErrors((errors) => ({
+          ...errors,
+          dateRange: 'Please select a date range.',
+        }))
+
+        return
+      }
+      const bookings: BookingData[] = await getAllDocumentsFromCollection(
+        'Bookings',
       )
-      return
-    }
-
-    // Check if the user has already booked a spot for the same day
-    const userBookings = getUserBookings(bookings, userId!)
-    const bookingsOnSameDay = userBookings.filter((booking: BookingData) => {
-      const timestamp = (booking.start_date as unknown) as Timestamp
-      const bookingStartDate = timestamp.toDate()
-
-      return bookingStartDate.toString() === startDate.toString()
-    })
-    if (bookingsOnSameDay.length > 0) {
-      setFormError(
-        'You have already booked a parking spot for the selected date.',
+      // Check if the selected parking spot is available for the selected date range
+      const overlappingBookings = getOverlappingBookings(
+        bookings,
+        startDate,
+        endDate,
+        parkingSpotId,
       )
-      return
-    }
+      if (overlappingBookings.length > 0) {
+        setFormErrors((errors) => ({
+          ...errors,
+          parkingSpot:
+            'The selected parking spot is not available for the selected date range.',
+        }))
+        return
+      }
 
-    // Check if the user has reached their maximum number of bookings for the week
-    //Not necessary atm
-    /*   const bookingsInLastWeek = getUserBookingsInAWeek(userBookings)
-    if (bookingsInLastWeek.length >= 2) {
-      setFormError(
-        'You have reached your maximum number of bookings for the week.',
-      )
-      return
-    } */
+      // Check if the user has already booked a spot for the same day
+      const userBookings = getUserBookings(bookings, userId!)
+      const bookingsOnSameDay = userBookings.filter((booking: BookingData) => {
+        const timestamp = (booking.start_date as unknown) as Timestamp
+        const bookingStartDate = timestamp.toDate()
 
-    //Create booking
-    const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpot}`)
-    const userRef = doc(fireDb, `Users/${userId}`)
-    const currentDate = getCurrentDate()
+        return bookingStartDate.toString() === startDate.toString()
+      })
+      if (bookingsOnSameDay.length > 0) {
+        setFormErrors((errors) => ({
+          ...errors,
+          dateRange:
+            'You have already booked a parking spot for the selected date.',
+        }))
+        return
+      }
 
-    const newBookingData: BookingPostData = {
-      end_date: endDate,
-      parking_spot_id: parkingSpotRef,
-      start_date: startDate,
-      user_id: userRef,
-      createdDate: currentDate,
-    }
-    formError && setFormError('') //reset form error
+      //Create booking
+      const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpotId}`)
+      const userRef = doc(fireDb, `Users/${userId}`)
 
-    await addBookingPost(newBookingData)
-  }
+      const currentDate = getCurrentDate()
+      const newBookingData: BookingPostData = {
+        end_date: endDate,
+        parking_spot_id: parkingSpotRef,
+        start_date: startDate,
+        user_id: userRef,
+        createdDate: currentDate,
+      }
+      formErrors && setFormErrors({}) //reset form error
+
+      await addBookingPost(newBookingData)
+    },
+    [parkingSpotId, startDate, endDate, userId, formErrors],
+  )
 
   async function addBookingPost(bookingData: BookingPostData) {
     await addDoc(collection(fireDb, 'Bookings'), bookingData)
   }
 
-  const errorRef = useRef<HTMLInputElement>(null)
-  useEffect(() => {
-    if (formError) errorRef.current && errorRef.current.scrollIntoView()
-  }, [formError])
+  const [infoPopupOpen, setInfoPopupOpen] = useState(false)
+
+  const openInfoPopup = () => {
+    setInfoPopupOpen(true)
+  }
+
+  const closeInfoPopup = () => {
+    setInfoPopupOpen(false)
+  }
 
   return (
-    <form onSubmit={handleSubmit}>
-      {formError && (
-        <p ref={errorRef} style={{ color: 'red' }}>
-          {formError}
-        </p>
-      )}
-      <label>
-        Select Parking Spot:
-        <select
-          value={parkingSpot}
-          onChange={(e) => setParkingSpot(e.target.value)}
-          required
-        >
-          <option value="">-- Select a Parking Spot --</option>
-          {parkingSpots.map((spot) => (
-            <option value={spot.id} key={spot.name}>
-              {spot.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <br />
-      <DateRangePicker
-        startDate={startDate}
-        endDate={endDate}
-        onRangeChange={(start, end) => {
-          setStartDate(start)
-          setEndDate(end)
-        }}
-      />
-      <br />
-      <div>
-        <p>
-          Sunt förnuft vid bokningen av parkeringsplatserna tills all validering
-          och funktionalitet är på plats! ;)
-        </p>
-        <p>
-          San fransisco är parkeringsplatsen som är nedanför kontoret på
-          parkeringsplats 14
-        </p>
-        <p>
-          Boston parkeringarna är i garaget.
-          <span style={{ backgroundColor: 'yellow' }}>
-            <br />
-            Notera att boston-parkeringarna kräver att man parkerar framför
-            varandra så den som är innerst (Boston 2) behöver vänta på att
-            Boston 1 är ute
-          </span>{' '}
-        </p>
-      </div>
-      <br />
+    <div className="form-container">
+      {infoPopupOpen && <InfoPopup onClose={closeInfoPopup} />}
 
-      <button type="submit">Book Now</button>
-    </form>
+      <form onSubmit={handleSubmit}>
+        <div className="input-container">
+          <label htmlFor="parking-spot-select">Parking Spot:</label>
+          <div className="icon-content-wrapper">
+            <select
+              id="parking-spot-select"
+              name="parking-spot"
+              value={parkingSpotId}
+              onChange={handleParkingSpotChange}
+              required
+            >
+              <option value="">-- Välj parkeringsplats --</option>
+              {parkingSpots.map((spot) => (
+                <option key={spot.id} value={spot.id}>
+                  {spot.name}
+                </option>
+              ))}
+            </select>
+            <InfoIcon cursor="pointer" color="info" onClick={openInfoPopup} />
+          </div>
+        </div>
+        {formErrors.parkingSpot && (
+          <p style={{ color: 'red', fontSize: '12px' }}>
+            {formErrors.parkingSpot}
+          </p>
+        )}
+        <div className="input-container">
+          <label htmlFor="date-range-picker">Date Range:</label>
+          <DateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onRangeChange={handleDateRangeChange}
+          />
+        </div>
+        {formErrors.dateRange && (
+          <p style={{ color: 'red', fontSize: '12px' }}>
+            {formErrors.dateRange}
+          </p>
+        )}
+        <div>
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+    </div>
   )
 }
-
-export default BookingsForm
+export default BookingForm
