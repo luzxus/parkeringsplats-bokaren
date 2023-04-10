@@ -193,8 +193,8 @@ function BookingsTable({ bookings }: BookingsTableProps) {
             scrollButtons={isMobile && 'auto'}
             centered={!isMobile}
           >
-            <Tab label="Current Bookings" />
-            <Tab label="Expired Bookings" />
+            <Tab label="Aktuella Bokningar" />
+            <Tab label="Utgångna Bokningar" />
           </Tabs>
         </Box>
         <TabPanel
