@@ -1,7 +1,47 @@
 .login-wrapper {
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  padding: 20px;
+  width: calc(100% - 40px);
+}
+
+.login-wrapper label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: center;
+  width: 300px;
+}
+
+.login-wrapper input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 5px;
+  width: 300px;
+}
+
+.login-wrapper button[type="submit"] {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 150px;
+}
+
+.login-wrapper button[type="submit"]:hover {
+  background-color: #0069d9;
+}
+
+.login-wrapper .error {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
 }

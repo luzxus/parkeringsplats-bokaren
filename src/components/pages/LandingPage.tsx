@@ -1,20 +1,28 @@
 import React from 'react'
-import Bookings from './Bookings/Bookings'
-import Login from './Login'
+import { Button } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 
 interface LandingPageProps {
-  onLogin: (email: string, password: string) => void
   isLoggedIn: boolean
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onLogin, isLoggedIn }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn }) => {
+  const navigate = useNavigate()
+
+  const navigateHandler = () => {
+    navigate(isLoggedIn ? '/bookings' : '/login')
+  }
+
   return (
     <div style={{ textAlign: 'center' }}>
-      <h1>Forefront Halmstads parkeringsplats bokare!</h1>
+      <h1>Välkommen till Halmstads parkeringsbokare!</h1>
       <p style={{ fontWeight: 'bold' }}>
-        Välj bland våra två parkeringsplatser och boka
+        Välj bland våra tre parkeringsplatser och boka
       </p>
-      {!isLoggedIn ? <Login onLogin={onLogin} /> : <Bookings />}
+
+      <Button variant="contained" onClick={navigateHandler}>
+        {isLoggedIn ? 'Book Now' : 'Login'}
+      </Button>
     </div>
   )
 }

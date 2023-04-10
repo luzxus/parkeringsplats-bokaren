@@ -74,3 +74,14 @@ export const getDocumentById = async (
     return null
   }
 }
+
+export const getUserBookingsInAWeek = (userBookings: BookingData[]) => {
+  const today = new Date()
+  const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const bookingsInLastWeek = userBookings.filter((booking) => {
+    const timestamp = (booking.start_date as unknown) as Timestamp
+    const bookingStartDate = timestamp.toDate()
+    return bookingStartDate >= oneWeekAgo
+  })
+  return bookingsInLastWeek
+}
