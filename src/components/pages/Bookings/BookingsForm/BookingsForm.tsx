@@ -19,11 +19,13 @@ import {
   Box,
   Button,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Snackbar,
+  Typography,
 } from '@mui/material'
 type Props = {
   userId: string
@@ -285,11 +287,16 @@ const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
           <p className="form-error">{formErrors.parkingSpot}</p>
         )}
         <Box className="box-container" marginBottom={2}>
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onRangeChange={handleDateRangeChange}
-          />
+          <Grid container flexDirection="column">
+            <Typography variant="body2" color="Highlight">
+             OBS! Just nu går det bara att boka en dag i taget
+            </Typography>
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onRangeChange={handleDateRangeChange}
+            />
+          </Grid>
         </Box>
         {formErrors.dateRange && (
           <p className="form-error">{formErrors.dateRange}</p>
