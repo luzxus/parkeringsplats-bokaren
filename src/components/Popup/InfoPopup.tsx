@@ -26,6 +26,15 @@ const InfoPopup: React.FC<{ onClose: () => void }> = ({ onClose }) => (
           </span>
         </p>
       </div>
+      <div className="info-section">
+        <h3>Övrigt</h3>
+        <p>
+            Tänk på att parkeringskorten alltid behöver finnas till hands på
+            kontoret. Vet du om att du inte kommer vara på kontoret och har haft
+            en parkeringsplats så glöm inte att lämna den innan du går hem för
+            dagen
+        </p>
+      </div>
     </div>
   </div>
 )
