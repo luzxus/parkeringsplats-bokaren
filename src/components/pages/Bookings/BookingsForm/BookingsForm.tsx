@@ -1,19 +1,19 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from "react";
 
-import { BookingData, BookingPostData, ParkingSpot } from '../../../../models'
-import DateRangePicker from '../../../Datepicker/DateRangePicker'
-import { Timestamp, addDoc, collection, doc } from '@firebase/firestore'
-import { fireDb } from '../../../..'
-import { getCurrentDate } from '../../../../various/utils'
+import { BookingData, BookingPostData, ParkingSpot } from "../../../../models";
+import DateRangePicker from "../../../Datepicker/DateRangePicker";
+import { Timestamp, addDoc, collection, doc } from "@firebase/firestore";
+import { fireDb } from "../../../..";
+import { getCurrentDate } from "../../../../various/utils";
 import {
   getAllDocumentsFromCollection,
   getOverlappingBookings,
   getUserBookings,
-} from '../../../../various/validation'
-import { getAuth } from '@firebase/auth'
-import './BookingsForm.css'
-import InfoIcon from '@mui/icons-material/Info'
-import InfoPopup from '../../../Popup/InfoPopup'
+} from "../../../../various/validation";
+import { getAuth } from "@firebase/auth";
+import "./BookingsForm.css";
+import InfoIcon from "@mui/icons-material/Info";
+import InfoPopup from "../../../Popup/InfoPopup";
 import {
   Alert,
   Box,
@@ -26,210 +26,222 @@ import {
   SelectChangeEvent,
   Snackbar,
   Typography,
-} from '@mui/material'
+} from "@mui/material";
 type Props = {
-  userId: string
-  parkingSpots: ParkingSpot[]
-}
+  userId: string;
+  parkingSpots: ParkingSpot[];
+};
 
 type SnackProps = {
-  open: boolean
-  message: string
-  severity: 'success' | 'error'
-}
+  open: boolean;
+  message: string;
+  severity: "success" | "error";
+};
 
 const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
-  const [parkingSpotId, setParkingSpotId] = useState<string>('')
-  const [startDate, setStartDate] = useState<Date>(new Date())
-  const [endDate, setEndDate] = useState<Date>(new Date())
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
+  const [parkingSpotId, setParkingSpotId] = useState<string>("");
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const handleParkingSpotChange = useCallback(
     (event: SelectChangeEvent<string>) => {
-      setParkingSpotId(event.target.value)
-      setFormErrors({})
+      setParkingSpotId(event.target.value);
+      setFormErrors({});
     },
-    [],
-  )
+    []
+  );
   const handleDateRangeChange = useCallback((start: Date, end: Date) => {
-    setStartDate(start)
-    setEndDate(end)
-    setFormErrors({})
-  }, [])
+    setStartDate(start);
+    setEndDate(end);
+    setFormErrors({});
+  }, []);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
-      // Add 'async' here
-      event.preventDefault()
+      event.preventDefault();
 
       if (!parkingSpotId) {
         setFormErrors((errors) => ({
           ...errors,
-          parkingSpot: 'Please select a parking spot.',
-        }))
+          parkingSpot: "Please select a parking spot.",
+        }));
 
-        return
+        return;
       }
 
       if (!startDate || !endDate) {
         setFormErrors((errors) => ({
           ...errors,
-          dateRange: 'Please select a date range.',
-        }))
+          dateRange: "Please select a date range.",
+        }));
 
-        return
+        return;
       }
       const bookings: BookingData[] = await getAllDocumentsFromCollection(
-        'Bookings',
-      )
-      // Check if the selected parking spot is available for the selected date range
+        "Bookings"
+      );
       const overlappingBookings = getOverlappingBookings(
         bookings,
         startDate,
         endDate,
-        parkingSpotId,
-      )
+        parkingSpotId
+      );
       if (overlappingBookings.length > 0) {
         setFormErrors((errors) => ({
           ...errors,
           parkingSpot:
-            'The selected parking spot is not available for the selected date range.',
-        }))
-        return
+            "The selected parking spot is not available for the selected date range.",
+        }));
+        return;
       }
 
-      // Check if the user has already booked a spot for the same day
-      const userBookings = getUserBookings(bookings, userId!)
-      const bookingsOnSameDay = userBookings.filter((booking: BookingData) => {
-        const timestamp = (booking.start_date as unknown) as Timestamp
-        const bookingStartDate = timestamp.toDate()
+      const createDate = getCurrentDate();
+      const currentDate = getTodayDate();
+      const userBookings = getUserBookings(bookings, userId);
 
-        return bookingStartDate.toString() === startDate.toString()
-      })
-      if (bookingsOnSameDay.length > 0) {
+      // Check if the user has already made a booking today
+      const todaysBookings = userBookings.filter((booking: BookingData) => {
+        const bookingDate = new Date(booking.createdDate);
+        return isSameDay(bookingDate, currentDate);
+      });
+
+      if (todaysBookings.length > 0) {
         setFormErrors((errors) => ({
           ...errors,
           dateRange:
-            'You have already booked a parking spot for the selected date.',
-        }))
-        return
+            "Du har redan gjort en bokning idag. Du kan boka igen från och med 00:00",
+        }));
+        return;
       }
 
-      //Create booking
-      const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpotId}`)
-      const userRef = doc(fireDb, `Users/${userId}`)
+      const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpotId}`);
+      const userRef = doc(fireDb, `Users/${userId}`);
 
-      const currentDate = getCurrentDate()
       const newBookingData: BookingPostData = {
         end_date: endDate,
         parking_spot_id: parkingSpotRef,
         start_date: startDate,
         user_id: userRef,
-        createdDate: currentDate,
-      }
-      formErrors && setFormErrors({}) //reset form error
+        createdDate: createDate,
+      };
+      formErrors && setFormErrors({}); // reset form error
 
-      await addBookingPost(newBookingData)
+      await addBookingPost(newBookingData);
     },
-    [parkingSpotId, startDate, endDate, userId, formErrors],
-  )
+    [parkingSpotId, startDate, endDate, userId, formErrors]
+  );
 
+  // Helper function to check if two dates are on the same day
+  function isSameDay(date1: Date, date2: Date) {
+    return (
+      date1.getDate() === date2.getDate() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getFullYear() === date2.getFullYear()
+    );
+  }
+
+  // New function to get the current date as a Date object
+  function getTodayDate() {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
   async function addBookingPost(bookingData: BookingPostData) {
     try {
-      await addDoc(collection(fireDb, 'Bookings'), bookingData)
+      await addDoc(collection(fireDb, "Bookings"), bookingData);
       setToast({
         open: true,
-        message: 'Bokningen har nu skapats!',
-        severity: 'success',
-      })
+        message: "Bokningen har nu skapats!",
+        severity: "success",
+      });
     } catch (error) {
       setToast({
         open: true,
-        message: 'Ett fel inträffade',
-        severity: 'error',
-      })
+        message: "Ett fel inträffade",
+        severity: "error",
+      });
     }
   }
 
-  const [infoPopupOpen, setInfoPopupOpen] = useState(false)
+  const [infoPopupOpen, setInfoPopupOpen] = useState(false);
 
   const openInfoPopup = () => {
-    setInfoPopupOpen(true)
-  }
+    setInfoPopupOpen(true);
+  };
 
   const closeInfoPopup = () => {
-    setInfoPopupOpen(false)
-  }
+    setInfoPopupOpen(false);
+  };
 
   const [suggestedDates, setSuggestedDates] = useState<Map<string, Date>>(
-    new Map(),
-  )
+    new Map()
+  );
 
   useEffect(() => {
     const findNextAvailableDates = async () => {
       const bookings: BookingData[] = await getAllDocumentsFromCollection(
-        'Bookings',
-      )
-      const nextAvailableDates = new Map<string, Date>()
+        "Bookings"
+      );
+      const nextAvailableDates = new Map<string, Date>();
 
       for (const spot of parkingSpots) {
-        let currentDate = new Date()
-        currentDate.setHours(0, 0, 0, 0)
+        let currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
 
         while (true) {
           const overlappingBookings = getOverlappingBookings(
             bookings,
             currentDate,
             currentDate,
-            spot.id,
-          )
+            spot.id
+          );
           if (overlappingBookings.length === 0) {
-            nextAvailableDates.set(spot.id, new Date(currentDate))
-            break
+            nextAvailableDates.set(spot.id, new Date(currentDate));
+            break;
           }
-          currentDate.setDate(currentDate.getDate() + 1)
+          currentDate.setDate(currentDate.getDate() + 1);
         }
       }
 
-      setSuggestedDates(nextAvailableDates)
-    }
+      setSuggestedDates(nextAvailableDates);
+    };
 
-    findNextAvailableDates()
-  }, [parkingSpots])
+    findNextAvailableDates();
+  }, [parkingSpots]);
 
   const bookSuggestedHandler = async (parkingSpotId: string) => {
-    if (!suggestedDates.get(parkingSpotId)) return
+    if (!suggestedDates.get(parkingSpotId)) return;
 
-    const suggestedStartDate = suggestedDates.get(parkingSpotId)!
-    const suggestedEndDate = new Date(suggestedStartDate)
+    const suggestedStartDate = suggestedDates.get(parkingSpotId)!;
+    const suggestedEndDate = new Date(suggestedStartDate);
 
-    const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpotId}`)
-    const userRef = doc(fireDb, `Users/${userId}`)
+    const parkingSpotRef = doc(fireDb, `ParkingSpots/${parkingSpotId}`);
+    const userRef = doc(fireDb, `Users/${userId}`);
 
-    const currentDate = getCurrentDate()
+    const currentDate = getCurrentDate();
     const newBookingData: BookingPostData = {
       end_date: suggestedEndDate,
       parking_spot_id: parkingSpotRef,
       start_date: suggestedStartDate,
       user_id: userRef,
       createdDate: currentDate,
-    }
+    };
 
-    await addBookingPost(newBookingData)
-  }
-  const [selectOpen, setSelectOpen] = useState(false)
+    await addBookingPost(newBookingData);
+  };
+  const [selectOpen, setSelectOpen] = useState(false);
   const [toast, setToast] = useState<SnackProps>({
     open: false,
-    message: '',
-    severity: 'success',
-  })
+    message: "",
+    severity: "success",
+  });
   return (
     <div className="form-container">
       <Snackbar
         open={toast.open}
         autoHideDuration={5000}
         onClose={() => setToast((prevToast) => ({ ...prevToast, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={() =>
@@ -289,7 +301,8 @@ const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
         <Box className="box-container" marginBottom={2}>
           <Grid container flexDirection="column">
             <Typography variant="body2" color="Highlight">
-             OBS! Just nu går det bara att boka en dag i taget
+              OBS! Just nu går det bara att boka{" "}
+              <span style={{ fontWeight: "bold" }}>en gång</span> om dagen!
             </Typography>
             <DateRangePicker
               startDate={startDate}
@@ -306,6 +319,6 @@ const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
         </Button>
       </form>
     </div>
-  )
-}
-export default BookingForm
+  );
+};
+export default BookingForm;
