@@ -13,7 +13,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onRangeChange }) => {
   const [endDate, setEndDate] = useState<Date | null>(null)
 
   const handleRangeChange = (dates: any) => {
-    const [start, end] = dates
+    console.log('dates', dates)
+    const start = dates
+    const end = dates
 
     if (start) {
       start.setHours(0, 0, 0, 0)
@@ -36,7 +38,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onRangeChange }) => {
       selected={startDate}
       startDate={startDate}
       endDate={endDate}
-      selectsRange
       onChange={handleRangeChange}
       placeholderText="Välj datum för bokningen ska gälla"
     />
