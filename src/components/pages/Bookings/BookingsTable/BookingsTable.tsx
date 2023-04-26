@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import { BookingData } from '../../../../models'
+import React, { useMemo, useState } from "react";
+import { BookingData } from "../../../../models";
 import {
   Box,
   Paper,
@@ -20,7 +20,7 @@ import {
   ListItemText,
   Grid,
   Typography,
-} from '@mui/material'
+} from "@mui/material";
 import {
   DocumentData,
   DocumentReference,
@@ -28,28 +28,28 @@ import {
   deleteDoc,
   doc,
   getDoc,
-} from 'firebase/firestore'
-import { app, fireDb } from '../../../..'
-import { getAuth } from 'firebase/auth'
-import { useTheme } from '@mui/material/styles'
-import Delete from '@mui/icons-material/Delete'
+} from "firebase/firestore";
+import { app, fireDb } from "../../../..";
+import { getAuth } from "firebase/auth";
+import { useTheme } from "@mui/material/styles";
+import Delete from "@mui/icons-material/Delete";
 
 interface BookingsTableProps {
-  bookings: BookingData[]
+  bookings: BookingData[];
 }
 
 interface TabPanelProps {
-  value: number
-  index: number
-  data: BookingData[]
-  deleteBooking?: (id: string) => void
+  value: number;
+  index: number;
+  data: BookingData[];
+  deleteBooking?: (id: string) => void;
 }
 function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
-  const auth = getAuth()
-  const currentUserEmail = auth.currentUser?.email ?? ''
+  const auth = getAuth();
+  const currentUserEmail = auth.currentUser?.email ?? "";
 
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <div
@@ -120,52 +120,57 @@ function TabPanel({ value, index, data, deleteBooking }: TabPanelProps) {
         </TableContainer>
       )}
     </div>
-  )
+  );
 }
 function BookingsTable({ bookings }: BookingsTableProps) {
   const filteredBookings = useMemo(() => {
-    const currentDate = new Date()
+    const currentDate = new Date();
     return bookings.filter((booking) => {
-      const endDate = new Date(booking.end_date)
-      return endDate < currentDate
-    })
-  }, [bookings])
+      const endDate = new Date(booking.end_date);
+      return (
+        currentDate >= endDate &&
+        currentDate.toDateString() !== endDate.toDateString()
+      );
+    });
+  }, [bookings]);
 
   const currentBookings = useMemo(() => {
-    const currentDate = new Date()
+    const currentDate = new Date();
     return bookings.filter((booking) => {
-      const endDate = new Date(booking.end_date)
-
-      return endDate > currentDate
-    })
-  }, [bookings])
+      const endDate = new Date(booking.end_date);
+      return (
+        currentDate < endDate ||
+        currentDate.toDateString() === endDate.toDateString()
+      );
+    });
+  }, [bookings]);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue)
-  }
+    setValue(newValue);
+  };
 
   async function deleteBooking(bookingId: string) {
     const docRef: DocumentReference<DocumentData> = doc(
       fireDb,
-      'Bookings',
-      bookingId,
-    )
-    const docSnap: DocumentSnapshot<DocumentData> = await getDoc(docRef)
+      "Bookings",
+      bookingId
+    );
+    const docSnap: DocumentSnapshot<DocumentData> = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      console.log('Booking document does not exist')
-      return
+      console.log("Booking document does not exist");
+      return;
     }
 
-    await deleteDoc(docRef)
+    await deleteDoc(docRef);
 
-    console.log('Booking document deleted successfully')
+    console.log("Booking document deleted successfully");
   }
 
-  const [value, setValue] = useState(0)
+  const [value, setValue] = useState(0);
 
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Grid
@@ -176,7 +181,7 @@ function BookingsTable({ bookings }: BookingsTableProps) {
     >
       <Grid item xs={12} m={2}>
         <Typography
-          variant={isMobile ? 'h4' : 'h3'}
+          variant={isMobile ? "h4" : "h3"}
           component="div"
           gutterBottom
         >
@@ -184,13 +189,13 @@ function BookingsTable({ bookings }: BookingsTableProps) {
         </Typography>
       </Grid>
       <Grid item xs={12}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
             value={value}
             onChange={handleChange}
             aria-label="Bookings"
-            variant={isMobile ? 'scrollable' : 'standard'}
-            scrollButtons={isMobile && 'auto'}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile && "auto"}
             centered={!isMobile}
           >
             <Tab label="Aktuella Bokningar" />
@@ -206,7 +211,7 @@ function BookingsTable({ bookings }: BookingsTableProps) {
         <TabPanel value={value} index={1} data={filteredBookings} />
       </Grid>
     </Grid>
-  )
+  );
 }
 
-export default React.memo(BookingsTable)
+export default React.memo(BookingsTable);
