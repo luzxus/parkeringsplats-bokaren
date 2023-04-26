@@ -256,8 +256,8 @@ const BookingForm: React.FC<Props> = ({ parkingSpots, userId }) => {
       <form onSubmit={handleSubmit}>
         <Box className="box-container" marginBottom={2}>
           <FormControl fullWidth>
-            <InputLabel id="parking-spot-select-label">
-              Parkingsplats
+            <InputLabel id="parking-spot-select-label" style={{ zIndex: 0 }}>
+              Parkeringsplats
             </InputLabel>
             <Select
               labelId="parking-spot-select-label"
